@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aircraft Photo Gallery</title>
+  <meta name="description" content="Responsive gallery of aircraft photos with photographer credits." />
+  <!-- Preload metadata JSON from repository root -->
+  <link rel="preload" href="../photo-list.json" as="fetch" crossorigin="anonymous" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>Aircraft Gallery</h1>
+    <p class="tagline">Tail numbers with photographer credits</p>
+    <div class="controls">
+      <button id="modeToggle" type="button" class="mode-toggle" aria-pressed="false" title="Toggle between showing entire image or filling the frame">Fill Mode</button>
+    </div>
+  </header>
+
+  <main>
+  <div id="gallery" class="gallery fit" aria-live="polite" aria-busy="true"></div>
+    <template id="card-template">
+      <figure class="card">
+        <div class="image-wrapper">
+          <img class="thumb" alt="" loading="lazy" />
+          <figcaption class="caption">
+            <span class="tail"></span>
+            <span class="photographer"></span>
+          </figcaption>
+        </div>
+      </figure>
+    </template>
+  </main>
+
+  <footer class="site-footer">
+    <p>Data & Photos © Respective photographers. Gallery code © 2025.</p>
+  </footer>
+
+  <div id="lightbox" class="lightbox" hidden>
+    <button class="close" aria-label="Close" type="button">×</button>
+  <img id="lightbox-img" alt="Full size aircraft" />
+    <p id="lightbox-meta" class="meta"></p>
+  </div>
+
+  <script src="script.js" type="module"></script>
+</body>
+</html>
