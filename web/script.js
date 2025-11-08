@@ -16,6 +16,8 @@ try {
 function buildGallery(data, container) {
   container.textContent = '';
   const entries = Object.entries(data);
+  // Cache original dataset for filtering
+  globalThis.__PHOTO_DATA__ = entries;
   if (!entries.length) {
     container.innerHTML = '<div class="empty-state">No photos available.</div>';
     container.setAttribute('aria-busy', 'false');
@@ -55,6 +57,7 @@ function buildGallery(data, container) {
   container.setAttribute('aria-busy', 'false');
   initLazyLoading();
   initModeToggle();
+  initSearch();
 }
 
 function initLazyLoading() {
@@ -140,5 +143,49 @@ function initModeToggle() {
       btn.setAttribute('aria-pressed', 'false');
       btn.title = 'Switch to filling frame (may crop)';
     }
+  });
+}
+
+function initSearch() {
+  const input = document.getElementById('search');
+  if (!input || !globalThis.__PHOTO_DATA__) return;
+  const container = document.getElementById('gallery');
+  const template = document.getElementById('card-template');
+  let lastValue = '';
+  input.addEventListener('input', () => {
+    const value = input.value.trim().toLowerCase();
+    if (value === lastValue) return;
+    lastValue = value;
+    container.textContent = '';
+  const matches = value === '' ? globalThis.__PHOTO_DATA__ : globalThis.__PHOTO_DATA__.filter(([tail, meta]) => {
+      const photog = (meta.photographer || '').toLowerCase();
+      return tail.toLowerCase().includes(value) || photog.includes(value);
+    });
+    if (!matches.length) {
+      container.innerHTML = '<div class="no-results">No matches</div>';
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    for (const [tail, meta] of matches) {
+      const node = template.content.firstElementChild.cloneNode(true);
+      const img = node.querySelector('img');
+      const tailEl = node.querySelector('.tail');
+      const photogEl = node.querySelector('.photographer');
+      const file = meta.photo || `${tail}.jpg`;
+      img.alt = `Aircraft ${tail}${meta.photographer ? ' photo by ' + meta.photographer : ''}`;
+      img.dataset.src = `../images/${file}`;
+      tailEl.textContent = tail;
+      photogEl.textContent = meta.photographer || 'Unknown';
+      img.addEventListener('error', () => {
+        node.dataset.error = 'Missing image';
+        img.style.objectFit = 'contain';
+        img.style.background = 'repeating-conic-gradient(from 45deg,#222 0 25%,#333 0 50%)';
+        delete img.dataset.src;
+      });
+      node.addEventListener('click', () => openLightbox(tail, meta));
+      frag.appendChild(node);
+    }
+    container.appendChild(frag);
+    initLazyLoading();
   });
 }
