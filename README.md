@@ -10,6 +10,8 @@ https://jxck-s.github.io/aircraft-photos/web/
 
 The gallery lists tail numbers with photographer credit and offers a lightbox view.
 
+Link straight to one aircraft with `?reg=<REG>`, e.g. https://jxck-s.github.io/aircraft-photos/web/?reg=N628TS. Opening a photo updates the address bar, so the URL can be copied and shared.
+
 ## Usage
 
 Photos are organized by tail number in `images/` with metadata in `photo-list.json`. If you reuse them, please keep the photographer credit where possible.

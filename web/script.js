@@ -83,6 +83,37 @@ function initLazyLoading() {
   for (const i of imgs) io.observe(i);
 }
 
+// Deep link: ?reg=N628TS (or #N628TS) opens that photo in the lightbox
+function regFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const reg = params.get('reg') || decodeURIComponent(location.hash.slice(1));
+  return reg.trim().toUpperCase();
+}
+
+function openFromUrl() {
+  const reg = regFromUrl();
+  if (!reg || !globalThis.__PHOTO_DATA__) return;
+  const match = globalThis.__PHOTO_DATA__.find(([tail]) => tail.toUpperCase() === reg);
+  if (match) {
+    openLightbox(...match);
+    return;
+  }
+  // Unknown registration: show it in the search box so the empty result is explained
+  const input = document.getElementById('search');
+  if (input) {
+    input.value = reg;
+    input.dispatchEvent(new Event('input'));
+  }
+}
+
+function setUrlReg(tail) {
+  const url = new URL(location.href);
+  url.hash = '';
+  if (tail) url.searchParams.set('reg', tail);
+  else url.searchParams.delete('reg');
+  history.replaceState(null, '', url);
+}
+
 // Lightbox implementation
 function openLightbox(tail, meta) {
   const lb = document.getElementById('lightbox');
@@ -94,13 +125,16 @@ function openLightbox(tail, meta) {
   metaEl.textContent = `${tail} — Photographer: ${meta.photographer || 'Unknown'}`;
   lb.hidden = false;
   document.body.style.overflow = 'hidden';
+  setUrlReg(tail);
   trapFocus(lb);
 }
 
 function closeLightbox() {
   const lb = document.getElementById('lightbox');
+  if (lb.hidden) return;
   lb.hidden = true;
   document.body.style.overflow = '';
+  setUrlReg(null);
   releaseFocus();
 }
 
@@ -189,3 +223,6 @@ function initSearch() {
     initLazyLoading();
   });
 }
+
+// Runs last so the lightbox handlers and focus state above are initialised
+openFromUrl();
